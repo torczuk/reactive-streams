@@ -100,4 +100,39 @@ class FluxTest {
                 .verifyComplete();
 
     }
+
+    public static class Mutable {
+        private String value = "default";
+
+        public void setValue(String value) {
+            this.value = value;
+        }
+
+        public Flux<String> just() {
+            return Flux.just(value);
+        }
+
+        public Flux<String> defer() {
+            return Flux.defer(() -> Flux.just(value));
+        }
+    }
+
+    @Test
+    void shouldDefer() {
+        Mutable mutable = new Mutable();
+        Flux<String> just = mutable.just();
+        Flux<String> defer = mutable.defer();
+        mutable.setValue("mutable");
+
+        StepVerifier
+                .create(just)
+                .expectNext("default")
+                .verifyComplete();
+
+        StepVerifier
+                .create(defer)
+                .expectNext("mutable")
+                .verifyComplete();
+
+    }
 }
